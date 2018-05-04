@@ -166,9 +166,24 @@ JSONEditor.defaults.editors.array = JSONEditor.AbstractEditor.extend({
     
     // Check if it's cached
     this.item_info = this.item_info || {};
-    var stringified = JSON.stringify(schema);
-    if(typeof this.item_info[stringified] !== "undefined") return this.item_info[stringified];
     
+    try {
+      var stringified = JSON.stringify(schema);
+      if(typeof this.item_info[stringified] !== "undefined") return this.item_info[stringified];
+    }
+
+    // if the schema is recursive then don't attempt to cache it
+    catch(err) {
+        schema = this.jsoneditor.expandRefs(schema);
+
+        return {
+          title: schema.title || "item",
+          'default': schema["default"],
+          width: 12,
+          child_editors: schema.properties || schema.items
+        };
+    }
+
     // Get the schema for this item
     schema = this.jsoneditor.expandRefs(schema);
       
